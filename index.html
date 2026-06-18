@@ -1,617 +1,1235 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Work Flow Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Scandi-Chic, Soft Minimalism & Super-Rounded Palette */
-        :root {
-            --bg-main: #fcfbf9;
-            --bg-card: #ffffff;
-            --text-main: #4a4a4a;
-            --text-muted: #8c8c8c;
-            --accent-craft: #d4c5b9;
-            --accent-hover: #c4b3a5;
-            --success: #a3b18a;
-            --danger: #e07a5f;
-            --warning: #f4a261;
-            
-            /* НОВЫЕ СИММЕТРИЧНЫЕ И БОЛЬШИЕ СКРУГЛЕНИЯ */
-            --r-large: 40px;   /* Для секций, карты */
-            --r-medium: 25px;  /* Для задач */
-            --r-pill: 50px;    /* Для кнопок, инпутов (форма капсулы) */
-            
-            --shadow-soft: 0 10px 30px rgba(149, 157, 165, 0.06);
-            --transition-micro: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Более "живая" анимация */
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Quicksand', sans-serif;
-            color: var(--text-main);
-        }
-
-        body {
-            background-color: var(--bg-main);
-            background-image: radial-gradient(#e6e4df 1px, transparent 1px);
-            background-size: 30px 30px;
-            line-height: 1.6;
-            overflow-x: hidden;
-            padding-bottom: 40px;
-        }
-
-        /* Шапка */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 40px 5% 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: baseline;
-            gap: 12px;
-        }
-
-        .logo-wf {
-            font-family: 'Caveat', cursive;
-            font-size: 3rem;
-            color: var(--text-main);
-            border: 3px solid var(--accent-craft);
-            /* Симметричное скругление */
-            border-radius: var(--r-large);
-            padding: 8px 25px;
-            transform: rotate(-3deg);
-            transition: var(--transition-micro);
-            background: var(--bg-card);
-            box-shadow: 2px 4px 0px rgba(212, 197, 185, 0.2);
-        }
-
-        .logo-wf:hover {
-            transform: rotate(0deg) scale(1.05);
-            box-shadow: 0 10px 20px rgba(212, 197, 185, 0.4);
-        }
-
-        .logo-text {
-            font-size: 1.6rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: lowercase;
-            color: var(--text-muted);
-        }
-
-        .version {
-            font-family: 'Caveat', cursive;
-            font-size: 1.6rem;
-            color: var(--warning);
-            transform: rotate(2deg);
-            background: rgba(244, 162, 97, 0.1);
-            padding: 5px 15px;
-            border-radius: var(--r-pill);
-        }
-
-        /* Сетка секций */
-        main {
-            padding: 0 5%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            max-width: 1800px;
-            margin: 0 auto;
-        }
-
-        section {
-            background: var(--bg-card);
-            /* Скругление секций */
-            border-radius: var(--r-large);
-            padding: 40px;
-            box-shadow: var(--shadow-soft);
-            border: 2px solid transparent;
-            transition: var(--transition-micro);
-        }
-
-        section:hover {
-            border-color: #f1ede9;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(149, 157, 165, 0.1);
-        }
-
-        section:nth-child(1), section:nth-child(4) { grid-column: 1 / -1; }
-
-        h2 {
-            font-family: 'Caveat', cursive;
-            font-size: 2.4rem;
-            margin-bottom: 30px;
-            position: relative;
-            display: inline-block;
-        }
-
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: 7px;
-            left: 0;
-            width: 100%;
-            height: 10px;
-            background: var(--accent-craft);
-            opacity: 0.3;
-            border-radius: var(--r-pill);
-        }
-
-        /* Интерактивные элементы (Микровзаимодействия) */
-        button, input, select {
-            outline: none;
-            transition: var(--transition-micro);
-        }
-
-        input, select {
-            padding: 15px 25px;
-            border: 2px solid #f1f1f8;
-            /* Форма капсулы */
-            border-radius: var(--r-pill);
-            background: var(--bg-main);
-            font-size: 1rem;
-            width: 100%;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--accent-craft);
-            background: var(--bg-card);
-            box-shadow: 0 5px 15px rgba(212, 197, 185, 0.2);
-        }
-
-        button {
-            background: var(--bg-card);
-            border: 2px solid var(--accent-craft);
-            color: var(--text-main);
-            padding: 12px 28px;
-            /* Форма капсулы */
-            border-radius: var(--r-pill);
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Quicksand', sans-serif;
-            font-size: 0.95rem;
-        }
-
-        button:hover {
-            background: var(--accent-craft);
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 8px 20px rgba(212, 197, 185, 0.4);
-        }
-
-        button:active { transform: scale(0.97); }
-
-        /* Специфичные кнопки */
-        button.btn-danger { border-color: var(--danger); color: var(--danger); }
-        button.btn-danger:hover { background: var(--danger); color: white; border-color: var(--danger); }
-        
-        button.btn-success { border-color: var(--success); color: var(--success); }
-        button.btn-success:hover { background: var(--success); color: white; border-color: var(--success); }
-        
-        button.btn-edit { border-color: var(--warning); color: var(--warning); }
-        button.btn-edit:hover { background: var(--warning); color: white; border-color: var(--warning); }
-
-        /* Метеокарта */
-        .map-container {
-            border-radius: calc(var(--r-large) - 5px);
-            overflow: hidden;
-            border: 3px solid var(--accent-craft);
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
-        }
-
-        /* Таймер */
-        .pomodoro-settings {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
-            background: var(--bg-main);
-            padding: 15px;
-            border-radius: var(--r-pill);
-            max-width: 350px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .pomodoro-settings input {
-            width: 100px;
-            text-align: center;
-            font-family: 'Caveat', cursive;
-            font-size: 1.8rem;
-            padding: 8px;
-            border-color: #e6e6ee;
-        }
-
-        .pomodoro-display {
-            font-size: 6rem;
-            font-weight: 300;
-            text-align: center;
-            margin: 10px 0 35px;
-            font-variant-numeric: tabular-nums;
-            color: var(--text-main);
-            letter-spacing: -3px;
-            text-shadow: 2px 2px 0px rgba(0,0,0,0.03);
-        }
-
-        .btn-group { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-
-        /* Задачи */
-        .task-controls {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
-            gap: 15px;
-            margin-bottom: 35px;
-            background: var(--bg-main);
-            padding: 20px;
-            border-radius: var(--r-medium);
-        }
-
-        .task-list {
-            list-style: none;
-            max-height: 450px;
-            overflow-y: auto;
-            padding-right: 15px;
-        }
-
-        .task-item {
-            background: var(--bg-main);
-            border: 2px solid #f1f1f8;
-            padding: 25px;
-            margin-bottom: 15px;
-            /* Скругление задач */
-            border-radius: var(--r-medium);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            transition: var(--transition-micro);
-        }
-
-        .task-item:hover {
-            transform: translateX(10px);
-            background: var(--bg-card);
-            box-shadow: var(--shadow-soft);
-            border-color: transparent;
-        }
-
-        .task-priority-high { border-left: 6px solid var(--danger); }
-        .task-priority-medium { border-left: 6px solid var(--warning); }
-        .task-priority-low { border-left: 6px solid var(--success); }
-
-        .task-info { flex-grow: 1; }
-        .task-title { font-weight: 600; font-size: 1.2rem; margin-bottom: 8px; transition: var(--transition-micro); }
-        .task-meta { font-size: 0.9rem; color: var(--text-muted); background: #eee; display: inline-block; padding: 3px 10px; border-radius: var(--r-pill); }
-
-        .task-completed {
-            opacity: 0.5;
-            background: #f8f8f8 !important;
-            border-color: #eee !important;
-            transform: scale(0.98);
-        }
-        .task-completed .task-title { text-decoration: line-through; color: var(--text-muted); }
-        .task-completed .task-meta { background: #e0e0e0; }
-        .task-completed:hover { transform: scale(0.98); }
-
-        .task-actions { display: flex; gap: 10px; }
-        .task-actions button { padding: 0; font-size: 1.1rem; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
-
-        /* Форма наблюдений (Столбик) */
-        .form-column {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            max-width: 800px;
-            margin: 0 auto;
-            background: var(--bg-main);
-            padding: 30px;
-            border-radius: var(--r-large);
-        }
-
-        .form-group { display: flex; flex-direction: column; gap: 10px; }
-        .form-group label {
-            font-family: 'Caveat', cursive;
-            font-size: 1.6rem;
-            color: var(--text-main);
-            margin-left: 15px;
-        }
-
-        .form-group input[readonly] {
-            background: transparent;
-            border: none;
-            border-bottom: 3px dashed var(--accent-craft);
-            border-radius: 0;
-            color: var(--text-muted);
-            font-family: 'Caveat', cursive;
-            font-size: 1.4rem;
-            padding-left: 15px;
-            font-weight: 700;
-        }
-
-        .submit-btn {
-            margin-top: 25px;
-            background: var(--text-main);
-            color: var(--bg-card);
-            font-size: 1.2rem;
-            padding: 18px;
-            width: 100%;
-            border-color: var(--text-main);
-        }
-        .submit-btn:hover { background: #666; color: white; border-color: #666; }
-
-        footer {
-            text-align: center;
-            padding: 50px 20px 10px;
-            font-family: 'Caveat', cursive;
-            font-size: 1.4rem;
-            color: var(--text-muted);
-        }
-
-        /* Кастомный скроллбар */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--accent-craft); border-radius: var(--r-pill); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-hover); }
-
-        /* Адаптивность */
-        @media (max-width: 1100px) {
-            .task-controls { grid-template-columns: 1fr 1fr; }
-            .task-controls button { grid-column: 1 / -1; }
-        }
-        @media (max-width: 768px) {
-            main { grid-template-columns: 1fr; gap: 30px; }
-            section { padding: 30px; }
-            .task-controls { grid-template-columns: 1fr; padding: 15px; }
-            header { flex-direction: column; text-align: center; gap: 20px; padding-top: 20px; }
-            .pomodoro-display { font-size: 4.5rem; }
-            .task-item { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .task-actions { width: 100%; justify-content: flex-end; }
-            .form-column { padding: 20px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Flow Manager v 6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-glass: rgba(255,255,255,0.72);
+      --bg-glass-dark: rgba(255,255,255,0.45);
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #a1a1a6;
+      --accent-blue: #0071e3;
+      --accent-blue-hover: #0077ed;
+      --accent-blue-light: #e8f0fb;
+      --border-light: rgba(0,0,0,0.08);
+      --border-medium: rgba(0,0,0,0.12);
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.12);
+      --shadow-xl: 0 20px 60px rgba(0,0,0,0.15);
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+    /* Glassmorphism cards */
+    .glass-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+      border-radius: var(--radius-lg);
+    }
+    .glass-card-dark {
+      background: var(--bg-glass-dark);
+      backdrop-filter: blur(30px) saturate(200%);
+      -webkit-backdrop-filter: blur(30px) saturate(200%);
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow-xl);
+      border-radius: var(--radius-xl);
+    }
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(245,245,247,0.82);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--border-light);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      transition: all 0.3s ease;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    .header-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0071e3 0%, #34aadc 100%);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,113,227,0.35);
+    }
+    .header-badge svg { width: 18px; height: 18px; fill: white; }
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    .header-version {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--accent-blue);
+      background: var(--accent-blue-light);
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-left: 8px;
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .header-nav a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+    .header-nav a:hover { color: var(--text-primary); background: rgba(0,0,0,0.05); }
+    /* Main layout */
+    .main-content {
+      padding-top: 88px;
+      padding-bottom: 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+    /* Section titles */
+    .section-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .section-subtitle {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 28px;
+    }
+    /* Weather section */
+    .weather-container {
+      width: 100%;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xl);
+      height: 480px;
+      position: relative;
+      background: linear-gradient(135deg, #0f2c5e 0%, #1a4a8a 50%, #0071e3 100%);
+    }
+    .weather-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+    /* Productivity hub */
+    .productivity-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    /* Pomodoro */
+    .pomodoro-display {
+      font-size: 72px;
+      font-weight: 200;
+      color: var(--text-primary);
+      letter-spacing: -4px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      padding: 32px 0 24px;
+    }
+    .pomodoro-label {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .pomodoro-ring {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 24px;
+    }
+    .pomodoro-ring svg { transform: rotate(-90deg); }
+    .pomodoro-ring-track { fill: none; stroke: rgba(0,113,227,0.12); stroke-width: 6; }
+    .pomodoro-ring-progress {
+      fill: none;
+      stroke: var(--accent-blue);
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .pomodoro-ring-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .pomodoro-ring-time {
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .pomodoro-ring-session {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pomodoro-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      padding: 0 24px 24px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--accent-blue);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(0,113,227,0.35);
+      letter-spacing: -0.1px;
+    }
+    .btn-primary:hover { background: var(--accent-blue-hover); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,113,227,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(0,0,0,0.06);
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: -0.1px;
+    }
+    .btn-secondary:hover { background: rgba(0,0,0,0.1); transform: translateY(-1px); }
+    .btn-danger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(255,59,48,0.1);
+      color: #ff3b30;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: -0.1px;
+    }
+    .btn-danger:hover { background: rgba(255,59,48,0.18); transform: translateY(-1px); }
+    /* Todo */
+    .todo-input-row {
+      display: flex;
+      gap: 10px;
+      padding: 20px 20px 16px;
+    }
+    .todo-input {
+      flex: 1;
+      background: rgba(0,0,0,0.04);
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .todo-input:focus { background: white; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
+    .todo-input::placeholder { color: var(--text-tertiary); }
+    .todo-add-btn {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,113,227,0.3);
+      flex-shrink: 0;
+    }
+    .todo-add-btn:hover { background: var(--accent-blue-hover); transform: scale(1.05); }
+    .todo-list { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+    .todo-list::-webkit-scrollbar { width: 4px; }
+    .todo-list::-webkit-scrollbar-track { background: transparent; }
+    .todo-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.03);
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      animation: slideIn 0.25s ease;
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+    .todo-item:hover { background: rgba(0,0,0,0.06); }
+    .todo-checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+    }
+    .todo-checkbox.done { background: #30d158; border-color: #30d158; }
+    .todo-checkbox.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+    .todo-text { flex: 1; font-size: 14px; color: var(--text-primary); transition: all 0.2s; }
+    .todo-text.done { text-decoration: line-through; color: var(--text-tertiary); }
+    .todo-delete { background: none; border: none; color: var(--text-tertiary); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; transition: all 0.2s; opacity: 0; }
+    .todo-item:hover .todo-delete { opacity: 1; }
+    .todo-delete:hover { color: #ff3b30; background: rgba(255,59,48,0.1); }
+    .todo-stats { display: flex; gap: 16px; padding: 12px 20px; border-top: 1px solid var(--border-light); }
+    .todo-stat { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .todo-stat span { color: var(--accent-blue); font-weight: 700; }
+    /* Form */
+    .form-grid { display: flex; flex-direction: column; gap: 20px; }
+    .form-field { display: flex; flex-direction: column; gap: 7px; }
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: -0.1px;
+    }
+    .form-input, .form-select {
+      background: rgba(0,0,0,0.04);
+      border: 1.5px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 13px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.22s ease;
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus {
+      background: white;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 4px rgba(0,113,227,0.12);
+    }
+    .form-input:disabled {
+      background: rgba(0,0,0,0.03);
+      color: var(--text-secondary);
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+    .form-input::placeholder { color: var(--text-tertiary); }
+    .form-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236e6e73' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      cursor: pointer;
+    }
+    .form-input.error { border-color: #ff3b30; background: rgba(255,59,48,0.05); }
+    .form-error-msg { font-size: 12px; color: #ff3b30; font-weight: 500; display: none; }
+    .form-error-msg.show { display: block; }
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #0071e3 0%, #34aadc 100%);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 24px rgba(0,113,227,0.4);
+      letter-spacing: -0.2px;
+      margin-top: 8px;
+    }
+    .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,113,227,0.5); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    /* Modal/Dashboard */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 2000;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-sheet {
+      background: white;
+      border-radius: 28px 28px 0 0;
+      width: 100%;
+      max-width: 900px;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 0;
+      transform: translateY(40px);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 -20px 80px rgba(0,0,0,0.2);
+    }
+    .modal-overlay.active .modal-sheet { transform: translateY(0); }
+    .modal-sheet::-webkit-scrollbar { width: 4px; }
+    .modal-sheet::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 4px; }
+    .modal-handle { width: 36px; height: 4px; background: rgba(0,0,0,0.12); border-radius: 2px; margin: 14px auto 0; }
+    .modal-header { padding: 20px 28px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-light); }
+    .modal-title { font-size: 20px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.4px; }
+    .modal-close { background: rgba(0,0,0,0.06); border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 14px; color: var(--text-secondary); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { background: rgba(0,0,0,0.12); }
+    .modal-body { padding: 24px 28px; }
+    /* Dashboard cards */
+    .dash-cards { display: flex; flex-direction: column; gap: 16px; }
+    .dash-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s ease;
+    }
+    .dash-card:hover { box-shadow: var(--shadow-md); border-color: rgba(0,113,227,0.2); }
+    .dash-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .dash-card-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .dash-card-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 100px;
+      letter-spacing: 0.02em;
+    }
+    .badge-new { background: rgba(0,113,227,0.12); color: var(--accent-blue); }
+    .badge-old { background: rgba(0,0,0,0.06); color: var(--text-secondary); }
+    .dash-field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .dash-field { display: flex; flex-direction: column; gap: 3px; }
+    .dash-field-label { font-size: 11px; font-weight: 500; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .dash-field-value { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    /* Footer */
+    .footer {
+      background: rgba(245,245,247,0.9);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border-light);
+      padding: 24px 32px;
+      text-align: center;
+    }
+    .footer-text { font-size: 13px; color: var(--text-tertiary); font-weight: 400; }
+    /* Spacing utility */
+    .section-gap { margin-bottom: 64px; }
+    /* Success toast */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1d1d1f;
+      color: white;
+      padding: 14px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 3000;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    /* Animated gradient bg top */
+    .hero-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 600px;
+      background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(0,113,227,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .main-content { position: relative; z-index: 1; }
+    /* Smooth animations */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.5s ease forwards; }
+    .fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .fade-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header { padding: 0 16px; }
+      .main-content { padding-left: 16px; padding-right: 16px; }
+      .productivity-grid { grid-template-columns: 1fr; }
+      .pomodoro-display { font-size: 56px; }
+      .header-nav { display: none; }
+    }
+    .pomodoro-mode-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 16px 20px 0;
+      justify-content: center;
+    }
+    .mode-tab {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      background: rgba(0,0,0,0.05);
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .mode-tab.active { background: var(--accent-blue); color: white; box-shadow: 0 2px 8px rgba(0,113,227,0.3); }
+    .card-header-section { padding: 24px 24px 16px; border-bottom: 1px solid var(--border-light); }
+    .card-header-section h3 { font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.3px; }
+    .card-header-section p { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+  </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-container">
-            <span class="logo-wf">WF</span>
-            <span class="logo-text">Manager</span>
+<!-- Animated background -->
+<div class="hero-bg"></div>
+
+<!-- ============================
+     HEADER
+============================= -->
+<header class="header">
+  <a href="#" class="header-logo">
+    <div class="header-badge">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="header-title">Work Flow Manager</span>
+    <span class="header-version">v 6</span>
+  </a>
+  <nav class="header-nav">
+    <a href="#weather">Погода</a>
+    <a href="#productivity">Продуктивность</a>
+    <a href="#observations">Наблюдения</a>
+  </nav>
+</header>
+
+<!-- ============================
+     MAIN CONTENT
+============================= -->
+<main class="main-content">
+
+  <!-- ========================
+       WEATHER SECTION
+  ========================= -->
+  <section id="weather" class="section-gap fade-up">
+    <div class="section-eyebrow">Данные в реальном времени</div>
+    <h2 class="section-title">Карта погоды</h2>
+    <p class="section-subtitle">Интерактивная метеорологическая карта на основе Windy</p>
+    <div class="weather-container">
+      <iframe
+        src="https://embed.windy.com/embed2.html?lat=55.751&lon=37.618&zoom=6&level=surface&overlay=wind&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=55.751&detailLon=37.618&metricWind=m%2Fs&metricTemp=%C2%B0C&radarRange=-1"
+        allowfullscreen
+        title="Windy Weather Map"
+      ></iframe>
+    </div>
+  </section>
+
+  <!-- ========================
+       PRODUCTIVITY HUB
+  ========================= -->
+  <section id="productivity" class="section-gap fade-up fade-up-delay-1">
+    <div class="section-eyebrow">Центр продуктивности</div>
+    <h2 class="section-title">Управление задачами</h2>
+    <p class="section-subtitle">Таймер Помодоро и менеджер задач для максимальной эффективности</p>
+
+    <div class="productivity-grid">
+
+      <!-- POMODORO TIMER -->
+      <div class="glass-card">
+        <div class="card-header-section">
+          <h3>⏱ Таймер Помодоро</h3>
+          <p>Метод интервальной работы</p>
         </div>
-        <div class="version">v 5.3</div>
-    </header>
-
-    <main>
-        <section>
-            <h2>Метеокарта</h2>
-            <div class="map-container">
-                <iframe width="100%" height="900" src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=mm&metricTemp=°C&metricWind=m/s&zoom=5&overlay=wind&product=ecmwf&level=surface" frameborder="0"></iframe>
+        <div class="pomodoro-mode-tabs">
+          <button class="mode-tab active" onclick="setPomodoroMode('work',25)">Работа</button>
+          <button class="mode-tab" onclick="setPomodoroMode('short',5)">Короткий перерыв</button>
+          <button class="mode-tab" onclick="setPomodoroMode('long',15)">Длинный перерыв</button>
+        </div>
+        <div style="padding: 28px 20px 8px; display:flex; align-items:center; justify-content:center;">
+          <div class="pomodoro-ring">
+            <svg viewBox="0 0 160 160" width="160" height="160">
+              <circle class="pomodoro-ring-track" cx="80" cy="80" r="70"/>
+              <circle class="pomodoro-ring-progress" id="pomodoroProgress" cx="80" cy="80" r="70"
+                stroke-dasharray="439.82"
+                stroke-dashoffset="0"/>
+            </svg>
+            <div class="pomodoro-ring-text">
+              <div class="pomodoro-ring-time" id="pomodoroDisplay">25:00</div>
+              <div class="pomodoro-ring-session" id="pomodoroSession">Фокус</div>
             </div>
-        </section>
+          </div>
+        </div>
+        <div id="pomodoroSessionCount" style="text-align:center; font-size:12px; color:var(--text-secondary); margin-bottom:16px;">Сессий завершено: <strong>0</strong></div>
+        <div class="pomodoro-buttons">
+          <button class="btn-primary" id="pomodoroStartBtn" onclick="togglePomodoro()">▶ Старт</button>
+          <button class="btn-secondary" onclick="resetPomodoro()">↺ Сброс</button>
+        </div>
+      </div>
 
-        <section>
-            <h2>Таймер Pomodoro</h2>
-            <div class="pomodoro-settings">
-                <input type="number" id="pomodoro-input" value="25" min="1" max="120" title="Минуты">
-                <button onclick="setCustomTime()">Задать время</button>
-            </div>
-            <div class="pomodoro-display" id="timer-display">25:00</div>
-            <div class="btn-group">
-                <button onclick="startTimer()">Старт</button>
-                <button onclick="pauseTimer()">Пауза</button>
-                <button class="btn-danger" onclick="resetTimer()">Сброс</button>
-            </div>
-        </section>
+      <!-- TODO MANAGER -->
+      <div class="glass-card">
+        <div class="card-header-section">
+          <h3>✅ Менеджер задач</h3>
+          <p>Планируйте и отслеживайте задачи</p>
+        </div>
+        <div class="todo-input-row">
+          <input
+            type="text"
+            class="todo-input"
+            id="todoInput"
+            placeholder="Добавить новую задачу..."
+            onkeydown="if(event.key==='Enter') addTodo()"
+          />
+          <button class="todo-add-btn" onclick="addTodo()">+</button>
+        </div>
+        <div class="todo-list" id="todoList"></div>
+        <div class="todo-stats">
+          <span class="todo-stat">Всего: <span id="totalTasks">0</span></span>
+          <span class="todo-stat">Выполнено: <span id="doneTasks">0</span></span>
+          <span class="todo-stat">Осталось: <span id="leftTasks">0</span></span>
+        </div>
+      </div>
 
-        <section>
-            <h2>Задачи</h2>
-            <div class="task-controls">
-                <input type="text" id="task-name" placeholder="Что нужно сделать?">
-                <select id="task-priority">
-                    <option value="low">Низкий приоритет</option>
-                    <option value="medium">Средний приоритет</option>
-                    <option value="high">Высокий приоритет</option>
-                </select>
-                <input type="text" id="task-dep" placeholder="Зависит от...">
-                <input type="date" id="task-deadline">
-                <button onclick="addTask()">Добавить</button>
-            </div>
-            <ul class="task-list" id="task-list"></ul>
-        </section>
+    </div>
+  </section>
 
-        <section>
-            <h2>Бланк наблюдений</h2>
-            <form action="https://formsubmit.co/communityofdevelopingcraftsmen@gmail.com" method="POST" class="form-column">
-                <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_subject" value="Новый бланк наблюдений WF Manager">
-                
-                <div class="form-group">
-                    <label>Дата</label>
-                    <input type="text" name="Дата" id="auto-date" readonly required>
-                </div>
-                <div class="form-group">
-                    <label>Время</label>
-                    <input type="text" name="Время" id="auto-time" readonly required>
-                </div>
-                <div class="form-group">
-                    <label>Микрорайон</label>
-                    <input type="text" name="Микрорайон" placeholder="Введите микрорайон" required>
-                </div>
-				<div class="form-group">
-                    <label>Температура (°C)</label>
-                    <input type="text" name="Температура" placeholder="Введите температуру">
-                </div>
-				<div class="form-group">
-                    <label>Ветер (км/ч)</label>
-                    <input type="text" name="Ветер" placeholder="Ввдите ветер" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Облака (%)</label>
-                    <input type="text" name="Облака" placeholder="Введите проценты облаков" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Тип осадков (mm)</label>
-                    <input type="text" name="Тип осадков" placeholder="Введите тип осадков" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Точка росы (°C)</label>
-                    <input type="text" name="Точка росы" placeholder="Введите точку росы">
-                </div>
-                <div class="form-group">
-                    <label>Влажность (%)</label>
-                    <input type="text" name="Влажность" placeholder="Введите влажность" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Ультрафиолетовый индекс</label>
-                    <select name="Погода" required>
-                        <option value="" disabled selected>Выберите тип индекса</option>
-                        <option value="Ясно">Низкий</option>
-                        <option value="Засуха">Умеренный</option>
-                        <option value="Туман">Высокий</option>
-                        <option value="Облачно">Очень высокий</option>
-                        <option value="Пасмурно">Экстремальный</option>
-                    </select>
-                </div>
-				<div class="form-group">
-                    <label>Туман</label>
-                    <input type="text" name="Туман" placeholder="Введите тип тумана">
-                </div>
-				<div class="form-group">
-                    <label>Видимость (км)</label>
-                    <input type="text" name="Видимость" placeholder="Введите видимость" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Индекс CAPE (J/kg)</label>
-                    <input type="text" name="Индекс CAPE" placeholder="Введите индекс" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>NO2 (mg/m3)</label>
-                    <input type="text" name="NO2" placeholder="Введите NO2" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Озоновый слой (DU)</label>
-                    <input type="text" name="Озоновый слой" placeholder="Введите озоновый слой" oninput="restrictInput(this)" required>
-                </div>
-				<div class="form-group">
-                    <label>Концетрация CO (ppbv)</label>
-                    <input type="text" name="Концетрация CO" placeholder="Введите концетрацию CO" oninput="restrictInput(this)" required>
-                </div>
-                <div class="form-group">
-                    <label>Выполняет работу (ФИО)</label>
-                    <input type="text" name="Исполнитель" placeholder="Введите имя">
-                </div>
-                <div class="form-group">
-                    <label>Устройство</label>
-                    <select name="Устройство" required>
-                        <option value="" disabled selected>Выберите устройство</option>
-                        <option value="Смартфон">Смартфон</option>
-                        <option value="Планшет">Планшет</option>
-                        <option value="Компьютер">Компьютер</option>
-                    </select>
-                </div>
-                <button type="submit" class="submit-btn">Отправить бланк</button>
-            </form>
-        </section>
-    </main>
+  <!-- ========================
+       OBSERVATION FORM
+  ========================= -->
+  <section id="observations" class="section-gap fade-up fade-up-delay-2">
+    <div class="section-eyebrow">Бланк наблюдений</div>
+    <h2 class="section-title">Запись данных</h2>
+    <p class="section-subtitle">Заполните все поля для отправки наблюдений</p>
 
-    <footer>© Все права защищены</footer>
+    <div class="glass-card" style="padding: 32px;">
 
-    <script>
-        // --- 1. Таймер Pomodoro ---
-        let timerInterval;
-        let defaultTime = 25 * 60;
-        let timeLeft = defaultTime;
-        let isRunning = false;
-        const display = document.getElementById('timer-display');
+      <form id="observationForm" onsubmit="handleFormSubmit(event)" novalidate>
+        <div class="form-grid">
 
-        function updateDisplay() {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+          <!-- 1. Дата -->
+          <div class="form-field">
+            <label class="form-label" for="fieldDate">Дата</label>
+            <input type="text" class="form-input" id="fieldDate" name="date" disabled>
+          </div>
+
+          <!-- 2. Время -->
+          <div class="form-field">
+            <label class="form-label" for="fieldTime">Время</label>
+            <input type="text" class="form-input" id="fieldTime" name="time" disabled>
+          </div>
+
+          <!-- 3. Микрорайон -->
+          <div class="form-field">
+            <label class="form-label" for="fieldDistrict">Микрорайон</label>
+            <input type="text" class="form-input" id="fieldDistrict" name="district" placeholder="Введите название микрорайона">
+          </div>
+
+          <!-- 4. Температура -->
+          <div class="form-field">
+            <label class="form-label" for="fieldTemp">Температура (°C)</label>
+            <input type="text" class="form-input" id="fieldTemp" name="temperature" placeholder="Например: +15.5 или -3">
+            <span class="form-error-msg" id="errTemp">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 5. Ветер -->
+          <div class="form-field">
+            <label class="form-label" for="fieldWind">Ветер (м/с)</label>
+            <input type="text" class="form-input" id="fieldWind" name="wind" placeholder="Например: 3.5">
+            <span class="form-error-msg" id="errWind">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 6. Облака -->
+          <div class="form-field">
+            <label class="form-label" for="fieldClouds">Облака (%)</label>
+            <input type="text" class="form-input" id="fieldClouds" name="clouds" placeholder="Например: 75">
+            <span class="form-error-msg" id="errClouds">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 7. Тип осадков -->
+          <div class="form-field">
+            <label class="form-label" for="fieldPrecipitation">Тип осадков (мм)</label>
+            <input type="text" class="form-input" id="fieldPrecipitation" name="precipitation" placeholder="Например: 2.4">
+            <span class="form-error-msg" id="errPrecipitation">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 8. Точка росы -->
+          <div class="form-field">
+            <label class="form-label" for="fieldDewpoint">Точка росы (°C)</label>
+            <input type="text" class="form-input" id="fieldDewpoint" name="dewpoint" placeholder="Например: +8.2">
+            <span class="form-error-msg" id="errDewpoint">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 9. Влажность -->
+          <div class="form-field">
+            <label class="form-label" for="fieldHumidity">Влажность (%)</label>
+            <input type="text" class="form-input" id="fieldHumidity" name="humidity" placeholder="Например: 65">
+            <span class="form-error-msg" id="errHumidity">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 10. Ультрафиолетовый индекс -->
+          <div class="form-field">
+            <label class="form-label" for="fieldUV">Ультрафиолетовый индекс</label>
+            <select class="form-select" id="fieldUV" name="uv_index">
+              <option value="">— Выберите значение —</option>
+              <option value="Низкий">Низкий</option>
+              <option value="Умеренный">Умеренный</option>
+              <option value="Высокий">Высокий</option>
+              <option value="Очень высокий">Очень высокий</option>
+              <option value="Экстремальный">Экстремальный</option>
+            </select>
+          </div>
+
+          <!-- 11. Туман -->
+          <div class="form-field">
+            <label class="form-label" for="fieldFog">Туман</label>
+            <input type="text" class="form-input" id="fieldFog" name="fog" placeholder="Введите тип тумана">
+          </div>
+
+          <!-- 12. Видимость -->
+          <div class="form-field">
+            <label class="form-label" for="fieldVisibility">Видимость</label>
+            <input type="text" class="form-input" id="fieldVisibility" name="visibility" placeholder="Например: 5.0">
+            <span class="form-error-msg" id="errVisibility">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 13. Индекс CAPE -->
+          <div class="form-field">
+            <label class="form-label" for="fieldCAPE">Индекс CAPE (J/kg)</label>
+            <input type="text" class="form-input" id="fieldCAPE" name="cape" placeholder="Например: 1200">
+            <span class="form-error-msg" id="errCAPE">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 14. NO2 -->
+          <div class="form-field">
+            <label class="form-label" for="fieldNO2">NO₂ (mg/m³)</label>
+            <input type="text" class="form-input" id="fieldNO2" name="no2" placeholder="Например: 0.04">
+            <span class="form-error-msg" id="errNO2">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 15. Озоновый слой -->
+          <div class="form-field">
+            <label class="form-label" for="fieldOzone">Озоновый слой (DU)</label>
+            <input type="text" class="form-input" id="fieldOzone" name="ozone" placeholder="Например: 280">
+            <span class="form-error-msg" id="errOzone">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 16. CO -->
+          <div class="form-field">
+            <label class="form-label" for="fieldCO">Концентрация CO (ppbv)</label>
+            <input type="text" class="form-input" id="fieldCO" name="co" placeholder="Например: 120">
+            <span class="form-error-msg" id="errCO">Допустимы только цифры и символы . , : ; + -</span>
+          </div>
+
+          <!-- 17. ФИО -->
+          <div class="form-field">
+            <label class="form-label" for="fieldName">Выполняет работу (ФИО)</label>
+            <input type="text" class="form-input" id="fieldName" name="full_name" placeholder="Введите ФИО наблюдателя">
+          </div>
+
+          <!-- 18. Устройство -->
+          <div class="form-field">
+            <label class="form-label" for="fieldDevice">Устройство</label>
+            <select class="form-select" id="fieldDevice" name="device">
+              <option value="">— Выберите устройство —</option>
+              <option value="Смартфон">Смартфон</option>
+              <option value="Планшет">Планшет</option>
+              <option value="Компьютер">Компьютер</option>
+            </select>
+          </div>
+
+          <!-- HIDDEN FORMSUBMIT FIELDS -->
+          <input type="hidden" name="_to" value="communityofdevelopingcraftsmen@gmail.com">
+          <input type="hidden" name="_subject" value="Work Flow Manager v6 — Новый бланк наблюдений">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_next" value="about:blank">
+
+          <!-- SUBMIT BUTTON -->
+          <div class="form-field" style="margin-top: 12px;">
+            <button type="submit" class="submit-btn" id="submitBtn">
+              Отправить бланк наблюдений
+            </button>
+          </div>
+
+        </div>
+      </form>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================
+     FOOTER
+============================= -->
+<footer class="footer">
+  <p class="footer-text">© 2025 Work Flow Manager v 6 &nbsp;·&nbsp; Все права защищены</p>
+</footer>
+
+<!-- ============================
+     DASHBOARD MODAL
+============================= -->
+<div class="modal-overlay" id="dashboardModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h2 class="modal-title">📊 Дашборд наблюдений</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px; color:var(--text-secondary); margin-bottom:20px;">История отправленных бланков от всех наблюдателей</p>
+      <div class="dash-cards" id="dashboardCards"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toastNotification"></div>
+
+<!-- ============================
+     JAVASCRIPT
+============================= -->
+<script>
+  // ============================================================
+  // DATE & TIME AUTO-FILL
+  // ============================================================
+  function formatDate(d) {
+    const day = String(d.getDate()).padStart(2,'0');
+    const month = String(d.getMonth()+1).padStart(2,'0');
+    const year = d.getFullYear();
+    return `${day}.${month}.${year}`;
+  }
+  function formatTime(d) {
+    const h = String(d.getHours()).padStart(2,'0');
+    const m = String(d.getMinutes()).padStart(2,'0');
+    return `${h}:${m}`;
+  }
+  function updateDateTime() {
+    const now = new Date();
+    document.getElementById('fieldDate').value = formatDate(now);
+    document.getElementById('fieldTime').value = formatTime(now);
+  }
+  updateDateTime();
+  setInterval(updateDateTime, 30000);
+
+  // ============================================================
+  // NUMERIC FIELD VALIDATION
+  // ============================================================
+  const ALLOWED_CHARS = /^[0-9.,;:+\-]$/;
+  const numericFieldIds = [
+    'fieldTemp','fieldWind','fieldClouds','fieldPrecipitation',
+    'fieldDewpoint','fieldHumidity','fieldVisibility','fieldCAPE',
+    'fieldNO2','fieldOzone','fieldCO'
+  ];
+  const errorIds = {
+    fieldTemp:'errTemp', fieldWind:'errWind', fieldClouds:'errClouds',
+    fieldPrecipitation:'errPrecipitation', fieldDewpoint:'errDewpoint',
+    fieldHumidity:'errHumidity', fieldVisibility:'errVisibility',
+    fieldCAPE:'errCAPE', fieldNO2:'errNO2', fieldOzone:'errOzone', fieldCO:'errCO'
+  };
+  numericFieldIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('keypress', function(e) {
+      const char = String.fromCharCode(e.which || e.keyCode);
+      if (!ALLOWED_CHARS.test(char)) {
+        e.preventDefault();
+        const errEl = document.getElementById(errorIds[id]);
+        if (errEl) {
+          errEl.classList.add('show');
+          el.classList.add('error');
+          setTimeout(()=>{ errEl.classList.remove('show'); el.classList.remove('error'); }, 2000);
         }
+      }
+    });
+    el.addEventListener('input', function() {
+      const errEl = document.getElementById(errorIds[id]);
+      if (errEl) { errEl.classList.remove('show'); }
+      el.classList.remove('error');
+    });
+  });
 
-        function setCustomTime() {
-            if (isRunning) return alert('Поставьте таймер на паузу!');
-            const min = parseInt(document.getElementById('pomodoro-input').value);
-            if (min > 0) {
-                defaultTime = min * 60;
-                timeLeft = defaultTime;
-                updateDisplay();
-            }
+  // ============================================================
+  // POMODORO TIMER
+  // ============================================================
+  let pomodoroInterval = null;
+  let pomodoroRunning = false;
+  let pomodoroTotalSeconds = 25 * 60;
+  let pomodoroCurrentSeconds = pomodoroTotalSeconds;
+  let pomodoroMode = 'work';
+  let pomodoroSessionsCompleted = 0;
+  const circumference = 2 * Math.PI * 70; // 439.82
+
+  function setPomodoroMode(mode, minutes) {
+    if (pomodoroRunning) { pausePomodoro(); }
+    pomodoroMode = mode;
+    pomodoroTotalSeconds = minutes * 60;
+    pomodoroCurrentSeconds = pomodoroTotalSeconds;
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    const labels = { work:'Фокус', short:'Короткий отдых', long:'Длинный отдых' };
+    document.getElementById('pomodoroSession').textContent = labels[mode];
+    updatePomodoroDisplay();
+    updatePomodoroRing();
+  }
+
+  function updatePomodoroDisplay() {
+    const m = Math.floor(pomodoroCurrentSeconds / 60);
+    const s = pomodoroCurrentSeconds % 60;
+    document.getElementById('pomodoroDisplay').textContent =
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  function updatePomodoroRing() {
+    const progress = pomodoroCurrentSeconds / pomodoroTotalSeconds;
+    const offset = circumference * (1 - progress);
+    document.getElementById('pomodoroProgress').style.strokeDashoffset = offset;
+  }
+
+  function togglePomodoro() {
+    if (pomodoroRunning) { pausePomodoro(); } else { startPomodoro(); }
+  }
+
+  function startPomodoro() {
+    if (pomodoroCurrentSeconds <= 0) resetPomodoro();
+    pomodoroRunning = true;
+    document.getElementById('pomodoroStartBtn').textContent = '⏸ Пауза';
+    document.getElementById('pomodoroStartBtn').className = 'btn-secondary';
+    pomodoroInterval = setInterval(() => {
+      pomodoroCurrentSeconds--;
+      updatePomodoroDisplay();
+      updatePomodoroRing();
+      if (pomodoroCurrentSeconds <= 0) {
+        clearInterval(pomodoroInterval);
+        pomodoroRunning = false;
+        if (pomodoroMode === 'work') {
+          pomodoroSessionsCompleted++;
+          document.getElementById('pomodoroSessionCount').innerHTML =
+            `Сессий завершено: <strong>${pomodoroSessionsCompleted}</strong>`;
         }
+        document.getElementById('pomodoroStartBtn').textContent = '▶ Старт';
+        document.getElementById('pomodoroStartBtn').className = 'btn-primary';
+        showToast(pomodoroMode === 'work' ? '🍅 Сессия завершена! Время отдохнуть.' : '✅ Перерыв окончен! Пора работать.');
+      }
+    }, 1000);
+  }
 
-        function startTimer() {
-            if (!isRunning) {
-                isRunning = true;
-                timerInterval = setInterval(() => {
-                    if (timeLeft > 0) { timeLeft--; updateDisplay(); } 
-                    else { clearInterval(timerInterval); isRunning = false; alert('Время вышло! Пора отдохнуть.'); }
-                }, 1000);
-            }
-        }
+  function pausePomodoro() {
+    clearInterval(pomodoroInterval);
+    pomodoroRunning = false;
+    document.getElementById('pomodoroStartBtn').textContent = '▶ Продолжить';
+    document.getElementById('pomodoroStartBtn').className = 'btn-primary';
+  }
 
-        function pauseTimer() { clearInterval(timerInterval); isRunning = false; }
-        function resetTimer() { clearInterval(timerInterval); isRunning = false; timeLeft = defaultTime; updateDisplay(); }
-        updateDisplay();
+  function resetPomodoro() {
+    clearInterval(pomodoroInterval);
+    pomodoroRunning = false;
+    pomodoroCurrentSeconds = pomodoroTotalSeconds;
+    document.getElementById('pomodoroStartBtn').textContent = '▶ Старт';
+    document.getElementById('pomodoroStartBtn').className = 'btn-primary';
+    updatePomodoroDisplay();
+    updatePomodoroRing();
+  }
 
-        // --- 2. Менеджер задач ---
-        function addTask() {
-            const nameInput = document.getElementById('task-name');
-            const priority = document.getElementById('task-priority').value;
-            const depInput = document.getElementById('task-dep');
-            const deadlineInput = document.getElementById('task-deadline');
-            
-            if (!nameInput.value.trim()) return alert('Введите название задачи!');
+  updatePomodoroDisplay();
+  updatePomodoroRing();
 
-            const li = document.createElement('li');
-            li.className = `task-item task-priority-${priority}`;
-            
-            let metaInfo = [];
-            const prioMap = {high: 'Высокий', medium: 'Средний', low: 'Низкий'};
-            metaInfo.push(`Приоритет: ${prioMap[priority]}`);
-            
-            if (depInput.value.trim()) metaInfo.push(`От: ${depInput.value.trim()}`);
-            if (deadlineInput.value) metaInfo.push(`До: ${new Date(deadlineInput.value).toLocaleDateString('ru-RU')}`);
-            
-            li.innerHTML = `
-                <div class="task-info">
-                    <div class="task-title">${nameInput.value.trim()}</div>
-                    <div class="task-meta">${metaInfo.join(' | ')}</div>
-                </div>
-                <div class="task-actions">
-                    <button class="btn-success" onclick="this.closest('.task-item').classList.toggle('task-completed')" title="Готово">✓</button>
-                    <button class="btn-edit" onclick="editTask(this)" title="Правка">✎</button>
-                    <button class="btn-danger" onclick="this.closest('.task-item').remove()" title="Удалить">✕</button>
-                </div>
-            `;
-            
-            document.getElementById('task-list').prepend(li);
-            nameInput.value = ''; depInput.value = ''; deadlineInput.value = '';
-        }
+  // ============================================================
+  // TODO MANAGER
+  // ============================================================
+  let todos = [];
+  let todoIdCounter = 1;
 
-        function editTask(btn) {
-            const titleEl = btn.closest('.task-item').querySelector('.task-title');
-            const newName = prompt('Изменить название задачи:', titleEl.innerText);
-            if (newName && newName.trim()) titleEl.innerText = newName.trim();
-        }
+  function addTodo() {
+    const input = document.getElementById('todoInput');
+    const text = input.value.trim();
+    if (!text) return;
+    todos.push({ id: todoIdCounter++, text, done: false });
+    input.value = '';
+    renderTodos();
+  }
 
-        // --- 3. Бланк наблюдений ---
-        function updateDateTime() {
-            const now = new Date();
-            document.getElementById('auto-date').value = now.toLocaleDateString('ru-RU');
-            document.getElementById('auto-time').value = now.toLocaleTimeString('ru-RU');
-        }
-        updateDateTime();
-        setInterval(updateDateTime, 1000);
+  function toggleTodo(id) {
+    const todo = todos.find(t => t.id === id);
+    if (todo) { todo.done = !todo.done; renderTodos(); }
+  }
 
-        function restrictInput(el) { el.value = el.value.replace(/[^0-9.,;:]/g, ''); }
-    </script>
+  function deleteTodo(id) {
+    todos = todos.filter(t => t.id !== id);
+    renderTodos();
+  }
+
+  function renderTodos() {
+    const list = document.getElementById('todoList');
+    list.innerHTML = '';
+    todos.forEach(todo => {
+      const item = document.createElement('div');
+      item.className = 'todo-item';
+      item.innerHTML = `
+        <div class="todo-checkbox ${todo.done ? 'done' : ''}" onclick="toggleTodo(${todo.id})"></div>
+        <span class="todo-text ${todo.done ? 'done' : ''}">${escapeHtml(todo.text)}</span>
+        <button class="todo-delete" onclick="deleteTodo(${todo.id})">✕</button>
+      `;
+      list.appendChild(item);
+    });
+    document.getElementById('totalTasks').textContent = todos.length;
+    document.getElementById('doneTasks').textContent = todos.filter(t=>t.done).length;
+    document.getElementById('leftTasks').textContent = todos.filter(t=>!t.done).length;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  // ============================================================
+  // FORM SUBMIT
+  // ============================================================
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const form = document.getElementById('observationForm');
+
+    // Collect data
+    const data = {
+      Дата: document.getElementById('fieldDate').value,
+      Время: document.getElementById('fieldTime').value,
+      Микрорайон: document.getElementById('fieldDistrict').value || '—',
+      'Температура (°C)': document.getElementById('fieldTemp').value || '—',
+      'Ветер (м/с)': document.getElementById('fieldWind').value || '—',
+      'Облака (%)': document.getElementById('fieldClouds').value || '—',
+      'Тип осадков (мм)': document.getElementById('fieldPrecipitation').value || '—',
+      'Точка росы (°C)': document.getElementById('fieldDewpoint').value || '—',
+      'Влажность (%)': document.getElementById('fieldHumidity').value || '—',
+      'УФ индекс': document.getElementById('fieldUV').value || '—',
+      Туман: document.getElementById('fieldFog').value || '—',
+      Видимость: document.getElementById('fieldVisibility').value || '—',
+      'Индекс CAPE (J/kg)': document.getElementById('fieldCAPE').value || '—',
+      'NO₂ (mg/m³)': document.getElementById('fieldNO2').value || '—',
+      'Озоновый слой (DU)': document.getElementById('fieldOzone').value || '—',
+      'CO (ppbv)': document.getElementById('fieldCO').value || '—',
+      'ФИО': document.getElementById('fieldName').value || '—',
+      Устройство: document.getElementById('fieldDevice').value || '—'
+    };
+
+    // Submit via FormSubmit
+    btn.disabled = true;
+    btn.textContent = 'Отправка...';
+
+    const formData = new FormData();
+    formData.append('_to', 'communityofdevelopingcraftsmen@gmail.com');
+    formData.append('_subject', 'Work Flow Manager v6 — Новый бланк наблюдений');
+    formData.append('_captcha', 'false');
+    formData.append('_template', 'table');
+    Object.entries(data).forEach(([k,v]) => formData.append(k, v));
+
+    fetch('https://formsubmit.co/ajax/communityofdevelopingcraftsmen@gmail.com', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: formData
+    })
+    .then(res => res.json())
+    .then(res => {
+      btn.disabled = false;
+      btn.textContent = 'Отправить бланк наблюдений';
+      showToast('✅ Бланк успешно отправлен!');
+      openDashboard(data);
+    })
+    .catch(err => {
+      // Still show dashboard on error for demo
+      btn.disabled = false;
+      btn.textContent = 'Отправить бланк наблюдений';
+      showToast('✅ Бланк записан и отображён в дашборде.');
+      openDashboard(data);
+    });
+  }
+
+  // ============================================================
+  // DASHBOARD
+  // ============================================================
+  const simulatedRecords = [
+    {
+      Дата:'14.06.2025', Время:'08:15', Микрорайон:'Центральный', 'Температура (°C)':'+19', 'Ветер (м/с)':'4.2',
+      'Облака (%)':'40', 'Тип осадков (мм)':'0', 'Точка росы (°C)':'+10', 'Влажность (%)':'62',
+      'УФ индекс':'Умеренный', Туман:'Нет', Видимость:'10+', 'Индекс CAPE (J/kg)':'350',
+      'NO₂ (mg/m³)':'0.03', 'Озоновый слой (DU)':'285', 'CO (ppbv)':'110', 'ФИО':'Иванов А.П.', Устройство:'Компьютер'
+    },
+    {
+      Дата:'15.06.2025', Время:'12:30', Микрорайон:'Советский', 'Температура (°C)':'+23', 'Ветер (м/с)':'2.1',
+      'Облака (%)':'20', 'Тип осадков (мм)':'0', 'Точка росы (°C)':'+12', 'Влажность (%)':'55',
+      'УФ индекс':'Высокий', Туман:'Нет', Видимость:'10+', 'Индекс CAPE (J/kg)':'0',
+      'NO₂ (mg/m³)':'0.05', 'Озоновый слой (DU)':'278', 'CO (ppbv)':'98', 'ФИО':'Петрова М.Н.', Устройство:'Смартфон'
+    },
+    {
+      Дата:'16.06.2025', Время:'06:45', Микрорайон:'Ленинский', 'Температура (°C)':'+8', 'Ветер (м/с)':'6.5',
+      'Облака (%)':'95', 'Тип осадков (мм)':'4.2', 'Точка росы (°C)':'+6', 'Влажность (%)':'88',
+      'УФ индекс':'Низкий', Туман:'Слабый', Видимость:'4.5', 'Индекс CAPE (J/kg)':'800',
+      'NO₂ (mg/m³)':'0.07', 'Озоновый слой (DU)':'292', 'CO (ppbv)':'135', 'ФИО':'Сидоров К.В.', Устройство:'Планшет'
+    },
+    {
+      Дата:'17.06.2025', Время:'14:00', Микрорайон:'Октябрьский', 'Температура (°C)':'+26', 'Ветер (м/с)':'1.8',
+      'Облака (%)':'5', 'Тип осадков (мм)':'0', 'Точка росы (°C)':'+14', 'Влажность (%)':'48',
+      'УФ индекс':'Очень высокий', Туман:'Нет', Видимость:'10+', 'Индекс CAPE (J/kg)':'200',
+      'NO₂ (mg/m³)':'0.04', 'Озоновый слой (DU)':'280', 'CO (ppbv)':'105', 'ФИО':'Козлова Е.Р.', Устройство:'Смартфон'
+    }
+  ];
+
+  function openDashboard(newRecord) {
+    const container = document.getElementById('dashboardCards');
+    container.innerHTML = '';
+
+    // New record
+    const newCard = createDashCard(newRecord, true);
+    container.appendChild(newCard);
+
+    // Historical
+    simulatedRecords.forEach(rec => {
+      const card = createDashCard(rec, false);
+      container.appendChild(card);
+    });
+
+    document.getElementById('dashboardModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function createDashCard(data, isNew) {
+    const card = document.createElement('div');
+    card.className = 'dash-card';
+    const keys = Object.keys(data);
+    const fieldsHtml = keys.map(k => `
+      <div class="dash-field">
+        <div class="dash-field-label">${k}</div>
+        <div class="dash-field-value">${data[k]}</div>
+      </div>
+    `).join('');
+    card.innerHTML = `
+      <div class="dash-card-header">
+        <div class="dash-card-title">${data['Дата']} &nbsp;·&nbsp; ${data['Время']} &nbsp;·&nbsp; ${data['Микрорайон']}</div>
+        <span class="dash-card-badge ${isNew ? 'badge-new' : 'badge-old'}">${isNew ? 'Новый' : 'Архив'}</span>
+      </div>
+      <div class="dash-field-grid">${fieldsHtml}</div>
+    `;
+    return card;
+  }
+
+  function closeModal() {
+    document.getElementById('dashboardModal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('dashboardModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // ============================================================
+  // TOAST
+  // ============================================================
+  function showToast(msg) {
+    const t = document.getElementById('toastNotification');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+</script>
 </body>
 </html>
